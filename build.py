@@ -14,6 +14,12 @@ import platform
 import shutil
 from pathlib import Path
 
+# 修复Windows控制台编码问题
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
 
 def clean_build():
     """清理构建目录"""
