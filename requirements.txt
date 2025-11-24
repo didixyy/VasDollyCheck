@@ -1,0 +1,2 @@
+# VasDolly Tool Dependencies
+pyinstaller==6.3.0
