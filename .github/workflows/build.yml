@@ -97,7 +97,7 @@ jobs:
   release:
     needs: [build-macos, build-windows]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     
     steps:
     - name: Download macOS artifact
@@ -112,35 +112,48 @@ jobs:
         name: VasDollyTool-Windows
         path: ./artifacts
     
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+    
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: v1.0.${{ github.run_number }}
+        name: VasDolly渠道解析工具 v1.0.${{ github.run_number }}
         files: |
           ./artifacts/VasDollyTool-macOS.zip
           ./artifacts/VasDollyTool.exe
         body: |
-          ## VasDolly 渠道工具
+          ## 📦 VasDolly 渠道解析工具
           
           ### 下载
           
-          **macOS版本（包含JRE）**
-          - VasDollyTool-macOS.zip (~60-80MB)
+          **🍎 macOS版本**
+          - 下载 `VasDollyTool-macOS.zip` 
+          - 解压后运行（约60-80MB）
           - 支持 Intel 和 Apple Silicon
-          - 无需安装Java，开箱即用
+          - 无需安装Java
           
-          **Windows版本（包含JRE）**
-          - VasDollyTool.exe (~60-80MB)
-          - 支持 Windows 10/11 x64
-          - 无需安装Java，开箱即用
+          **🪟 Windows版本**
+          - 下载 `VasDollyTool.exe` 直接运行
+          - 支持 Windows 10/11 x64（约60-80MB）
+          - 无需安装Java
           
-          ### 功能特性
-          - ✅ 解析APK渠道信息
-          - ✅ 批量生成多渠道包
-          - ✅ 内置Java运行环境
-          - ✅ 图形化操作界面
+          ### ✨ 功能特性
+          - ✅ 一键解析APK渠道信息
+          - ✅ 内置Java运行环境，开箱即用
+          - ✅ 简洁友好的图形界面
+          - ✅ 支持VasDolly多渠道APK
           
-          ### 使用说明
-          查看项目README获取详细使用指南
+          ### 🚀 使用方法
+          1. 运行程序
+          2. 点击"选择 APK 文件"按钮
+          3. 自动解析并显示渠道信息
+          
+          ---
+          **构建时间**: ${{ steps.date.outputs.date }}
+          **构建编号**: #${{ github.run_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
