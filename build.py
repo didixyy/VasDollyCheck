@@ -68,7 +68,7 @@ def build():
     args = [
         'src/main.py',
         '--name=VasDollyTool',
-        '--windowed',  # 不显示控制台窗口
+        # '--windowed',  # 暂时保留控制台窗口，方便调试
         '--onefile',   # 打包成单文件
         '--clean',     # 清理临时文件
         '--noconfirm', # 不确认覆盖

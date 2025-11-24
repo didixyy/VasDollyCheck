@@ -6,6 +6,7 @@ VasDolly渠道解析工具 - 主程序入口
 """
 import sys
 import os
+import traceback
 import tkinter as tk
 from tkinter import messagebox
 
@@ -14,6 +15,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from gui.main_window import MainWindow
 from utils.logger import logger
+
+
+def write_error_log(error_msg: str):
+    """将错误写入日志文件"""
+    try:
+        log_file = os.path.join(os.path.expanduser('~'), 'VasDollyTool_error.log')
+        with open(log_file, 'a', encoding='utf-8') as f:
+            import datetime
+            f.write(f"\n{'='*60}\n")
+            f.write(f"时间: {datetime.datetime.now()}\n")
+            f.write(f"错误: {error_msg}\n")
+            f.write(f"{'='*60}\n")
+        return log_file
+    except:
+        return None
 
 
 def main():
@@ -38,14 +54,24 @@ def main():
         root.mainloop()
         
     except Exception as e:
-        error_msg = f"程序启动失败: {str(e)}"
-        logger.critical(error_msg)
+        error_msg = f"程序启动失败: {str(e)}\n\n详细信息:\n{traceback.format_exc()}"
+        
+        # 写入日志文件
+        log_file = write_error_log(error_msg)
+        
+        try:
+            logger.critical(error_msg)
+        except:
+            pass
         
         # 显示错误对话框
         try:
             root = tk.Tk()
             root.withdraw()  # 隐藏主窗口
-            messagebox.showerror("错误", error_msg)
+            msg = f"程序启动失败: {str(e)}"
+            if log_file:
+                msg += f"\n\n详细日志已保存到:\n{log_file}"
+            messagebox.showerror("错误", msg)
         except Exception:
             print(error_msg)
         
