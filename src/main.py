@@ -10,11 +10,24 @@ import traceback
 import tkinter as tk
 from tkinter import messagebox
 
-# 添加src目录到Python路径
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# 添加项目根目录到Python路径
+if getattr(sys, 'frozen', False):
+    # 打包后的环境
+    base_path = sys._MEIPASS
+else:
+    # 开发环境
+    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-from gui.main_window import MainWindow
-from utils.logger import logger
+sys.path.insert(0, base_path)
+sys.path.insert(0, os.path.join(base_path, 'src'))
+
+try:
+    from src.gui.main_window import MainWindow
+    from src.utils.logger import logger
+except ImportError:
+    # 备用导入方式
+    from gui.main_window import MainWindow
+    from utils.logger import logger
 
 
 def write_error_log(error_msg: str):

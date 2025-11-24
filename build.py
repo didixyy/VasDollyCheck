@@ -98,6 +98,22 @@ def build():
         args.append('--icon=resources/icons/app_icon.icns')
         print("  包含: 应用图标")
     
+    # 添加隐藏导入（确保所有模块被打包）
+    hidden_imports = [
+        'src',
+        'src.gui',
+        'src.gui.main_window',
+        'src.gui.components',
+        'src.core',
+        'src.core.java_runner',
+        'src.core.channel_parser',
+        'src.utils',
+        'src.utils.logger',
+        'src.utils.file_helper',
+    ]
+    for module in hidden_imports:
+        args.append(f'--hidden-import={module}')
+    
     # 排除不需要的模块（减小体积）
     exclude_modules = [
         'matplotlib',
