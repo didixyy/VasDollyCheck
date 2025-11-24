@@ -39,19 +39,12 @@ class MainWindow:
     
     def _init_ui(self):
         """初始化UI界面"""
-        # 标签页
-        self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill='both', expand=True, padx=5, pady=5)
+        # 主框架（不使用标签页）
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.pack(fill='both', expand=True)
         
-        # 解析渠道标签页
-        self.parse_frame = tk.Frame(self.notebook)
-        self.notebook.add(self.parse_frame, text="解析渠道")
-        self._create_parse_tab()
-        
-        # 关于标签页
-        self.about_frame = tk.Frame(self.notebook)
-        self.notebook.add(self.about_frame, text="关于")
-        self._create_about_tab()
+        # 创建按钮
+        self._create_main_button()
         
         # 状态栏
         self.status_bar = tk.Label(
@@ -63,11 +56,11 @@ class MainWindow:
         )
         self.status_bar.pack(side='bottom', fill='x')
     
-    def _create_parse_tab(self):
-        """创建解析渠道标签页"""
+    def _create_main_button(self):
+        """创建主按钮"""
         # 使用place布局，让按钮精确居中
         self.select_button = tk.Button(
-            self.parse_frame,
+            self.main_frame,
             text="选择 APK 文件",
             command=self._select_and_parse_apk,
             font=('Arial', 16, 'bold'),
@@ -78,10 +71,7 @@ class MainWindow:
             bd=3,
             cursor='hand2'
         )
-        # 按钮位置：在垂直中间，高度为窗口的一半，四周留15像素间距
-        # relx=0.5, rely=0.5 表示按钮中心在窗口中心
-        # relwidth=1.0 表示宽度占满（会被anchor调整）
-        # relheight=0.5 表示高度为窗口的一半
+        # 按钮位置：在垂直中间，高度为窗口的一半，四周留间距
         self.select_button.place(
             relx=0.5,      # 水平居中
             rely=0.5,      # 垂直居中
