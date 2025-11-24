@@ -27,7 +27,8 @@ jobs:
     - name: Download VasDolly.jar
       run: |
         mkdir -p resources
-        curl -L -o resources/VasDolly.jar https://github.com/Tencent/VasDolly/releases/download/v3.0.6/VasDolly.jar
+        curl -L -o resources/VasDolly.jar https://github.com/Tencent/VasDolly/releases/download/v3.0.6/VasDolly-v3.0.6.jar || \
+        curl -L -o resources/VasDolly.jar https://github.com/Tencent/VasDolly/raw/master/jar/VasDolly.jar
     
     - name: Download and setup JRE (macOS ARM64)
       run: |
@@ -83,7 +84,14 @@ jobs:
     - name: Download VasDolly.jar
       run: |
         New-Item -ItemType Directory -Force -Path resources
-        Invoke-WebRequest -Uri "https://github.com/Tencent/VasDolly/releases/download/v3.0.6/VasDolly.jar" -OutFile "resources\VasDolly.jar"
+        $url = "https://github.com/Tencent/VasDolly/releases/download/v3.0.6/VasDolly-v3.0.6.jar"
+        $fallbackUrl = "https://github.com/Tencent/VasDolly/raw/master/jar/VasDolly.jar"
+        try {
+          Invoke-WebRequest -Uri $url -OutFile "resources\VasDolly.jar" -MaximumRedirection 5
+        } catch {
+          Write-Host "Primary URL failed, trying fallback..."
+          Invoke-WebRequest -Uri $fallbackUrl -OutFile "resources\VasDolly.jar" -MaximumRedirection 5
+        }
     
     - name: Download and setup JRE (Windows x64)
       run: |
