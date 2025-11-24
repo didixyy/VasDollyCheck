@@ -80,49 +80,6 @@ class MainWindow:
             anchor='center'
         )
     
-    def _create_about_tab(self):
-        """创建关于标签页"""
-        about_text = """
-VasDolly 渠道解析工具 v1.0
-        
-简洁的APK渠道信息解析工具
-
-功能特性：
-• 一键解析APK渠道信息
-• 自动复制结果到剪贴板
-• 显示完整渠道详细信息
-• 跨平台支持（Windows/Mac）
-• 无需配置Java环境
-
-技术栈：
-• Python + Tkinter
-• VasDolly (腾讯开源)
-
-使用说明：
-1. 点击"选择 APK 文件"按钮
-2. 选择要解析的APK文件
-3. 自动弹出对话框显示渠道信息
-4. 结果已自动复制到剪贴板
-
-项目地址：
-https://github.com/Tencent/VasDolly
-
-版本：v1.0
-日期：2025-11-24
-        """
-        
-        text_widget = tk.Text(
-            self.about_frame,
-            wrap='word',
-            font=('Arial', 11),
-            bg='#f9f9f9',
-            padx=20,
-            pady=20
-        )
-        text_widget.pack(fill='both', expand=True, padx=10, pady=10)
-        text_widget.insert('1.0', about_text)
-        text_widget.configure(state='disabled')
-    
     def _init_core_async(self):
         """异步初始化核心组件"""
         def init():
