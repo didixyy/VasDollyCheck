@@ -54,7 +54,8 @@ jobs:
     - name: Archive macOS app
       run: |
         cd dist
-        zip -r VasDollyTool-macOS.zip VasDollyTool.app
+        chmod +x VasDollyTool
+        zip VasDollyTool-macOS.zip VasDollyTool
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
