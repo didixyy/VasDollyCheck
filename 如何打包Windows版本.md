@@ -22,18 +22,20 @@ git push
 - 选择 `Build VasDolly Tool` workflow
 - 点击 `Run workflow` 按钮
 - 等待构建完成（大约10-15分钟）
-- 下载生成的Windows和macOS版本
+- 按系统和芯片类型下载对应产物
 
 **方式B：创建Tag触发**
 ```bash
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0
+git tag -a v1.0.7 -m "Release v1.0.7"
+git push origin v1.0.7
 ```
 这会自动构建并创建GitHub Release
 
 3. **下载构建产物**
 - 在Actions页面找到完成的workflow run
-- 下载 `VasDollyTool-Windows` 和 `VasDollyTool-macOS` 压缩包
+- Windows 下载 `VasDollyTool-Windows`
+- Intel Mac 下载 `VasDollyTool-macOS-x64`
+- Apple Silicon Mac 下载 `VasDollyTool-macOS-arm64`
 
 ---
 
@@ -128,4 +130,3 @@ python build.py
 5. 下载Windows版本
 
 就这么简单！🎉
-

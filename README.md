@@ -48,7 +48,10 @@ python build.py
 1. 推送代码到GitHub
 2. 访问 Actions 页面
 3. 运行 "Build VasDolly Tool" workflow
-4. 下载生成的Windows和macOS版本
+4. 按芯片类型下载生成的版本：
+   - Intel Mac 下载 `VasDollyTool-macOS-x64.zip`
+   - Apple Silicon Mac 下载 `VasDollyTool-macOS-arm64.zip`
+   - Windows 下载 `VasDollyTool.exe`
 
 详见：[如何打包Windows版本.md](如何打包Windows版本.md)
 
