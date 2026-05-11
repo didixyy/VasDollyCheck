@@ -10,9 +10,29 @@ permissions:
   contents: write
   packages: write
 
+env:
+  APP_VERSION: 1.0.7
+
 jobs:
   build-macos:
-    runs-on: macos-latest
+    name: Build macOS (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: macos-15-intel
+            expected_uname: x86_64
+            artifact_name: VasDollyTool-macOS-x64
+            archive_name: VasDollyTool-macOS-x64.zip
+            jre_url: https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.21%2B9/OpenJDK11U-jre_x64_mac_hotspot_11.0.21_9.tar.gz
+          - arch: arm64
+            runner: macos-15
+            expected_uname: arm64
+            artifact_name: VasDollyTool-macOS-arm64
+            archive_name: VasDollyTool-macOS-arm64.zip
+            jre_url: https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.21%2B9/OpenJDK11U-jre_aarch64_mac_hotspot_11.0.21_9.tar.gz
     
     steps:
     - name: Checkout code
@@ -28,24 +48,35 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyinstaller
     
-    - name: Download and setup JRE (macOS ARM64)
+    - name: Validate runner architecture
+      run: |
+        ACTUAL_ARCH="$(uname -m)"
+        EXPECTED_ARCH="${{ matrix.expected_uname }}"
+        echo "当前 runner 架构: ${ACTUAL_ARCH}"
+        echo "期望构建架构: ${EXPECTED_ARCH}"
+        if [ "${ACTUAL_ARCH}" != "${EXPECTED_ARCH}" ]; then
+          echo "runner 架构与目标产物不一致，停止构建，避免发布不可用的 macOS 包。"
+          exit 1
+        fi
+
+    - name: Download and setup JRE (macOS ${{ matrix.arch }})
       run: |
         mkdir -p resources/jre/macos downloads
-        # 检测架构
-        if [[ $(uname -m) == 'arm64' ]]; then
-          JRE_URL="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.21%2B9/OpenJDK11U-jre_aarch64_mac_hotspot_11.0.21_9.tar.gz"
-        else
-          JRE_URL="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.21%2B9/OpenJDK11U-jre_x64_mac_hotspot_11.0.21_9.tar.gz"
-        fi
+        JRE_URL="${{ matrix.jre_url }}"
         curl -L -o downloads/jre.tar.gz "$JRE_URL"
         tar -xzf downloads/jre.tar.gz -C downloads/
-        JRE_DIR=$(find downloads -type d -name "*jre*" -maxdepth 1 | head -1)
-        if [ -d "$JRE_DIR/Contents/Home" ]; then
-          cp -r "$JRE_DIR/Contents/Home/"* resources/jre/macos/
-        else
-          cp -r "$JRE_DIR/"* resources/jre/macos/
+        JRE_DIR=$(find downloads -type d -name "*jre*" -print -quit)
+        if [ -z "$JRE_DIR" ]; then
+          echo "未找到解压后的 JRE 目录"
+          exit 1
         fi
-        chmod +x resources/jre/macos/bin/*
+        if [ -d "$JRE_DIR/Contents/Home" ]; then
+          cp -R "$JRE_DIR/Contents/Home/." resources/jre/macos/
+        else
+          cp -R "$JRE_DIR/." resources/jre/macos/
+        fi
+        chmod +x resources/jre/macos/bin/java
+        resources/jre/macos/bin/java -version
     
     - name: Build application
       run: |
@@ -55,13 +86,13 @@ jobs:
       run: |
         cd dist
         chmod +x VasDollyTool
-        zip VasDollyTool-macOS.zip VasDollyTool
+        zip "${{ matrix.archive_name }}" VasDollyTool
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: VasDollyTool-macOS
-        path: dist/VasDollyTool-macOS.zip
+        name: ${{ matrix.artifact_name }}
+        path: dist/${{ matrix.archive_name }}
 
   build-windows:
     runs-on: windows-latest
@@ -105,10 +136,16 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     
     steps:
-    - name: Download macOS artifact
+    - name: Download macOS x64 artifact
       uses: actions/download-artifact@v4
       with:
-        name: VasDollyTool-macOS
+        name: VasDollyTool-macOS-x64
+        path: ./artifacts
+
+    - name: Download macOS arm64 artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: VasDollyTool-macOS-arm64
         path: ./artifacts
     
     - name: Download Windows artifact
@@ -124,20 +161,25 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v1.0.${{ github.run_number }}
-        name: VasDolly渠道解析工具 v1.0.${{ github.run_number }}
+        tag_name: v${{ env.APP_VERSION }}
+        name: VasDolly渠道解析工具 v${{ env.APP_VERSION }}
         files: |
-          ./artifacts/VasDollyTool-macOS.zip
+          ./artifacts/VasDollyTool-macOS-x64.zip
+          ./artifacts/VasDollyTool-macOS-arm64.zip
           ./artifacts/VasDollyTool.exe
         body: |
           ## 📦 VasDolly 渠道解析工具
           
           ### 下载
           
-          **🍎 macOS版本**
-          - 下载 `VasDollyTool-macOS.zip` 
+          **🍎 macOS Intel版本**
+          - Intel 芯片 Mac 下载 `VasDollyTool-macOS-x64.zip`
           - 解压后运行（约60-80MB）
-          - 支持 Intel 和 Apple Silicon
+          - 无需安装Java
+
+          **🍎 macOS Apple Silicon版本**
+          - M1/M2/M3/M4 等 Apple Silicon 芯片 Mac 下载 `VasDollyTool-macOS-arm64.zip`
+          - 解压后运行（约60-80MB）
           - 无需安装Java
           
           **🪟 Windows版本**
@@ -157,8 +199,8 @@ jobs:
           3. 自动解析并显示渠道信息
           
           ---
+          **版本号**: v${{ env.APP_VERSION }}
           **构建时间**: ${{ steps.date.outputs.date }}
           **构建编号**: #${{ github.run_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
